@@ -10,16 +10,19 @@ import re
 class ContractSpider(scrapy.Spider):
     name = "contracts"
 
+    #TODO: uncomment for shell script
     # assigns command line argument as page_id to be appended to URL string
-    def __init__(self, page_id, *args, **kwargs):
-        super(ContractSpider, self).__init__(*args, **kwargs)
-        self.page_id = page_id
+    # def __init__(self, page_id, *args, **kwargs):
+    #     super(ContractSpider, self).__init__(*args, **kwargs)
+    #     self.page_id = page_id
 
     # Request to Results page with list of contracts
     def start_requests(self):
 
+        # TODO: revert to shell script passing in page id as argument
         # URL of contract to scrape
-        url = "https://www.fbo.gov/index?s=opportunity&mode=list&tab=list&tabmode=list&pp=50&pageID=" + self.page_id
+        # url = "https://www.fbo.gov/index?s=opportunity&mode=list&tab=list&tabmode=list&pp=50&pageID=" + self.page_id
+        url = "https://www.fbo.gov/index?s=opportunity&mode=list&tab=list&tabmode=list&pp=50&pageID=10"
 
         # calls callback function which parses results page containing list of links to contracts
         yield scrapy.Request(url=url, callback=self.parse_results)

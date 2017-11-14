@@ -76,55 +76,60 @@ class ContractScraperSpiderMiddleware(object):
 
         # it has processed the response.
 
+        # DEFAULT MIDDLEWARE
+        for i in result:
+            yield i
 
 
-        # Initialize connection to database
+        # CHECKS FOR DUPILICATE SOLICITATION NUMBERS IN SQL DATABASE, RAISES IGNOREREQUEST IF SOL NUMBER EXISTS
 
-        Base = automap_base()
-
-        engine = create_engine('postgresql://postgres:passpass@localhost/contract_directory_site')
-
-        Base.prepare(engine, reflect=True)
-
-
-
-        # Create object to be mapped to database table
-
-        Contract = Base.classes.contracts
-
-        session = Session(engine)
-
-
-
-        solicitation_numbers = set()
-
-        for record in session.query(Contract):
-
-            solicitation_numbers.add(record.solicitation_number)
-
-
-
-        # Must return an iterable of Request, dict or Item objects.
-
-        for item in result:
-
-            if type(item) == dict:
-
-                if item['solicitation number'] in solicitation_numbers:
-
-                    print(item['solicitation number'])
-
-                    raise IgnoreRequest()
-
-
-
-                else:
-
-                    yield item
-
-            else:
-
-                yield item
+        # # Initialize connection to database
+        #
+        # Base = automap_base()
+        #
+        # engine = create_engine('postgresql://postgres:passpass@localhost/contract_directory_site')
+        #
+        # Base.prepare(engine, reflect=True)
+        #
+        #
+        #
+        # # Create object to be mapped to database table
+        #
+        # Contract = Base.classes.contracts
+        #
+        # session = Session(engine)
+        #
+        #
+        #
+        # solicitation_numbers = set()
+        #
+        # for record in session.query(Contract):
+        #
+        #     solicitation_numbers.add(record.solicitation_number)
+        #
+        #
+        #
+        # # Must return an iterable of Request, dict or Item objects.
+        #
+        # for item in result:
+        #
+        #     if type(item) == dict:
+        #
+        #         if item['solicitation number'] in solicitation_numbers:
+        #
+        #             print(item['solicitation number'])
+        #
+        #             # raise IgnoreRequest()
+        #
+        #
+        #
+        #         else:
+        #
+        #             yield item
+        #
+        #     else:
+        #
+        #         yield item
 
 
 

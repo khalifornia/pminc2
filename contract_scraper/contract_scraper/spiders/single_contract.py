@@ -2,12 +2,13 @@ import scrapy
 
 
 class SingleContractSpider(scrapy.Spider):
-    name = "singlecontract"
+    name = "single_contract"
 
     def start_requests(self):
         # open('singlecontract.json', 'w').close()
 
-        urls = ["https://www.fbo.gov/index?s=opportunity&mode=form&id=af2bae8856cd61928defef7277c739c4&tab=core&_cview=0"]
+        urls = ["https://www.fbo.gov/index?s=opportunity&mode=form&id=af2bae8856cd61928defef7277c739c4&tab=core&_cview=0",
+                "https://www.fbo.gov/?s=opportunity&mode=form&id=fd1eee8c5595e858575009b597ff8cc6&tab=core&_cview=1"]
 
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse_results, meta={'url': url})

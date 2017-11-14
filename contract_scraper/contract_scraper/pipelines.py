@@ -13,21 +13,26 @@
 
 
 import psycopg2
-
+from pymongo import MongoClient
 import re
 
-
+import contract_data_cleaners as clean
 
 class ContractScraperPipeline(object):
-
     def process_item(self, item, spider):
 
+        cleaned_naic = clean.parse_naics(item['naics'])
+        cleaned_soliciation_number = clean.parse_solicitation_number(item['solicitation number'])
+        # initialize connection to mongo database
+        client = MongoClient()
+        db = client.pminc
         # ensure solicitation exists & record is not blank
 
         if item['solicitation number'] is not None:
             # print("hello govna!!!")
-            #connection string
-            conn = psycopg2.connect(host="localhost", database="contract_directory_site", user="postgres", password="passpass")
+            # connection string
+            conn = psycopg2.connect(host="localhost", database="contract_directory_site", user="postgres",
+                                    password="passpass")
             cur = conn.cursor()
 
             try:
@@ -48,9 +53,9 @@ class ContractScraperPipeline(object):
             except KeyError:
                 location = "none"
 
-
-            #Filter synopsis to look nice
-            synopsis = ''.join(item['synopsis']).lstrip("{\"").lstrip().lstrip("\",\"").lstrip().rstrip("\"}").rstrip().rstrip("\",\"")
+            # Filter synopsis to look nice
+            synopsis = ''.join(item['synopsis']).lstrip("{\"").lstrip().lstrip("\",\"").lstrip().rstrip(
+                "\"}").rstrip().rstrip("\",\"")
 
             query = """
             INSERT INTO contracts(url, title, naics, solicitation_number, agency, agency_office, agency_location, gov_contact_full, posted_date, response_deadline,
@@ -61,20 +66,45 @@ class ContractScraperPipeline(object):
                     %s, %s)
             """
 
-
-            data = (str(item['url']), item['title'], item['naics'], item['solicitation number'],
+            data = (str(item['url']), item['title'], cleaned_naic, cleaned_soliciation_number,
                     agency, office, location,
                     item['gov contact full'], item['posted date'], item['response deadline'], item['notice type']
                     , item['classification code'], synopsis, item['vendor contact full']
                     , item['award date'], item['award number'], item['award dollar amount'], item['awarded duns']
                     , item['awardee'], item['point of contact'], item['primary point of contact'], item['set aside'])
 
-
-
             cur.execute(query, data)
             conn.commit()
             cur.close()
             conn.close()
+            # END SQL #
+
+            # START MONGO #
+            cursor = db.matches.find_one({cleaned_naic + ".contracts": {"$exists": True}})
+
+            # TEST CURSOR
+            # cursor = db.matches.find_one({"2.contracts": {"$exists": True}})
+            if cursor != None:
+                ## THERE IS A LIST OF CONTRACTS FOR THIS NAIC, APPEND THIS CONTRACT TO IT ##
+
+                # if db.matches.find_one({cleaned_naic + ".contracts": { "$in": [cleaned_soliciation_number]}}) == None:
+                document_id = db.matches.find_one({cleaned_naic + ".contracts": {"$exists": True}})['_id']
+                db.matches.update(
+                    {'_id': document_id},
+                    {
+                        '$addToSet': {
+                            cleaned_naic + ".contracts": cleaned_soliciation_number
+                        }
+                    }
+                )
+
+                print("already exists")
+            else:
+                ## THIS IS THE FIRST CONTRACT FOR THIS NAIC, CREATE A LIST WITH THIS CONTRACT AS THE ONLY ELEMENT ##
+                db.matches.insert({cleaned_naic: {"contracts": [cleaned_soliciation_number]}})
+                print("add")
+
+            # END MONGO #
         # endif
 
         return item
