@@ -6,4 +6,4 @@ import sys
 sys.path.insert(0, "C:/Users/fbgnew/PycharmProjects/fbg/procurematch_era/pminc/scripts")
 
 from scrapy import cmdline
-cmdline.execute("scrapy crawl single_contract".split())
+cmdline.execute("scrapy crawl contracts".split())

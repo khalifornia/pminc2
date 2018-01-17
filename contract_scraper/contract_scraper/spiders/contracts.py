@@ -22,10 +22,15 @@ class ContractSpider(scrapy.Spider):
         # TODO: revert to shell script passing in page id as argument
         # URL of contract to scrape
         # url = "https://www.fbo.gov/index?s=opportunity&mode=list&tab=list&tabmode=list&pp=50&pageID=" + self.page_id
-        url = "https://www.fbo.gov/index?s=opportunity&mode=list&tab=list&tabmode=list&pp=50&pageID=10"
+        i = 0
+        urls = []
+        while i < 50:
+            urls.append("https://www.fbo.gov/index?s=opportunity&mode=list&tab=list&tabmode=list&pp=50&pageID=" + str(i))
+            i += 1
 
         # calls callback function which parses results page containing list of links to contracts
-        yield scrapy.Request(url=url, callback=self.parse_results)
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse_results)
 
     # crawls results page and requests parse function which crawls the associated page of each result
     def parse_results(self, response):

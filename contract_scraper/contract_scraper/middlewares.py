@@ -17,9 +17,6 @@ from scrapy import signals
 from scrapy.exceptions import IgnoreRequest
 
 
-
-
-
 from sqlalchemy.ext.automap import automap_base
 
 from sqlalchemy.orm import Session
